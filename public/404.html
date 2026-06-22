@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>RobloxXea</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      GitHub Pages SPA redirect hack (adapted from rafgraph/spa-github-pages).
+
+      GitHub Pages is a static host with no server-side rewrites, so a refresh
+      on a deep link like /robloxxea/docs returns GitHub's 404. This script
+      catches that 404 and redirects to /robloxxea/?/docs, encoding the original
+      path as a query string. index.html then reads that query string and
+      replaces the URL back to /robloxxea/docs before React Router boots.
+
+      `pathSegmentsToKeep` must equal the number of path segments in the GitHub
+      Pages project URL prefix — for https://m7md0x.github.io/robloxxea/ that's 1
+      (the "robloxxea" segment). Change this if the repo is renamed or moved.
+    -->
+    <script type="text/javascript">
+      (function () {
+        var pathSegmentsToKeep = 1;
+
+        var l = window.location;
+        l.replace(
+          l.protocol +
+            '//' +
+            l.hostname +
+            (l.port ? ':' + l.port : '') +
+            l.pathname
+              .split('/')
+              .slice(0, 1 + pathSegmentsToKeep)
+              .join('/') +
+            '/?/' +
+            l.pathname
+              .slice(1)
+              .split('/')
+              .slice(pathSegmentsToKeep)
+              .join('/')
+              .replace(/&/g, '~and~') +
+            (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+            l.hash
+        );
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
