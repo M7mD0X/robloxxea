@@ -16,9 +16,10 @@ type CommunityPayload = { tools: Tool[] };
  * category, and tags.
  */
 
-// Default feed URL — change this to your hosted JSON feed in production.
+// Default feed URL — the live robloxxea-data repo. Overridable via
+// VITE_COMMUNITY_TOOLS_URL for forks / testing.
 const DEFAULT_FEED_URL =
-  'https://raw.githubusercontent.com/your-org/RobloxXea-CommunityFeed/main/communityTools.json';
+  'https://raw.githubusercontent.com/M7mD0X/robloxxea-data/main/communityTools.json';
 
 const FEED_URL =
   (import.meta.env.VITE_COMMUNITY_TOOLS_URL as string | undefined) ?? DEFAULT_FEED_URL;

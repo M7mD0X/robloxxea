@@ -15,7 +15,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt', '404.html'],
+      includeAssets: ['favicon.svg', 'icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'robots.txt', '404.html'],
       manifest: {
         name: 'RobloxXea',
         short_name: 'RobloxXea',

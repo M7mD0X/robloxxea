@@ -38,6 +38,10 @@ jobs:
         env:
           # vite.config.ts reads this to set the /robloxxea/ base path
           GITHUB_ACTIONS: 'true'
+          # Point the app at the live data repo so tools load from
+          # https://github.com/M7mD0X/robloxxea-data and stay auto-verified.
+          VITE_MAIN_TOOLS_URL: 'https://raw.githubusercontent.com/M7mD0X/robloxxea-data/main/mainTools.json'
+          VITE_COMMUNITY_TOOLS_URL: 'https://raw.githubusercontent.com/M7mD0X/robloxxea-data/main/communityTools.json'
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

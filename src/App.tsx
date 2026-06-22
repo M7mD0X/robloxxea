@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import BottomNav from './components/BottomNav';
+import InstallButton from './components/InstallButton';
+import UpdateToast from './components/UpdateToast';
 
 // Lazy-load each tab so the PWA ships a tiny initial bundle.
 const MainTools = lazy(() => import('./pages/MainTools'));
@@ -50,6 +52,8 @@ export default function App() {
           >
             v1.0.0
           </a>
+
+          <InstallButton />
         </div>
       </header>
 
@@ -67,6 +71,7 @@ export default function App() {
       </main>
 
       <BottomNav />
+      <UpdateToast />
     </div>
   );
 }
