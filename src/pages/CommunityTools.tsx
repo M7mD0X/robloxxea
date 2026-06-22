@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import ToolCard, { type Tool } from '../components/ToolCard';
+import SubmitToolButton from '../components/SubmitToolButton';
 import communityData from '../data/communityTools.json';
 
 type CommunityPayload = { tools: Tool[] };
@@ -145,6 +146,8 @@ export default function CommunityTools() {
           Couldn't reach the live feed — showing bundled sample data. ({error})
         </div>
       )}
+
+      <SubmitToolButton variant="full" />
 
       {filtered.length === 0 ? (
         <div className="card p-6 text-center text-sm text-slate-400">

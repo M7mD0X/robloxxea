@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import ToolCard, { type Tool } from '../components/ToolCard';
+import SubmitToolButton from '../components/SubmitToolButton';
 import mainToolsData from '../data/mainTools.json';
 
 type MainToolsPayload = { tools: Tool[] };
@@ -97,6 +98,8 @@ export default function MainTools() {
           Network fetch failed — showing bundled fallback. ({error})
         </div>
       )}
+
+      <SubmitToolButton variant="full" />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {visibleTools.map((tool) => (
