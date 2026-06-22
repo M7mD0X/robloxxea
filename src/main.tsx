@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
+import { ToolStorageProvider } from './hooks/useToolStorage';
 import './index.css';
 
 // `import.meta.env.BASE_URL` is `/` in dev and `/robloxxea/` when built for
@@ -10,7 +11,9 @@ import './index.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <App />
+      <ToolStorageProvider>
+        <App />
+      </ToolStorageProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import ToolCard, { type Tool } from '../components/ToolCard';
 import SubmitToolButton from '../components/SubmitToolButton';
+import { useToolStorage } from '../hooks/useToolStorage';
 import communityData from '../data/communityTools.json';
 
 type CommunityPayload = { tools: Tool[] };
@@ -31,6 +32,9 @@ export default function CommunityTools() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+
+  const { favorites, isFavorite, toggleFavorite, addRecent } = useToolStorage();
 
   useEffect(() => {
     let cancelled = false;
@@ -73,9 +77,13 @@ export default function CommunityTools() {
   }, [query]);
 
   const filtered = useMemo(() => {
-    if (!debouncedQuery) return tools;
+    let result = tools;
+    if (favoritesOnly) {
+      result = result.filter((t) => favorites.includes(t.id));
+    }
+    if (!debouncedQuery) return result;
     const q = debouncedQuery;
-    return tools.filter((t) => {
+    return result.filter((t) => {
       const haystack = [
         t.name,
         t.author,
@@ -87,7 +95,7 @@ export default function CommunityTools() {
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [tools, debouncedQuery]);
+  }, [tools, debouncedQuery, favoritesOnly, favorites]);
 
   if (loading) {
     return (
@@ -139,6 +147,25 @@ export default function CommunityTools() {
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </div>
+
+        {/* Favorites toggle */}
+        <div className="mt-2 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFavoritesOnly((v) => !v)}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+              favoritesOnly
+                ? 'border-amber-400/50 bg-amber-400/15 text-amber-400'
+                : 'border-white/10 bg-white/5 text-slate-400 hover:text-slate-200'
+            }`}
+            aria-pressed={favoritesOnly}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill={favoritesOnly ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            Favorites only ({tools.filter((t) => favorites.includes(t.id)).length})
+          </button>
+        </div>
       </section>
 
       {error && (
@@ -151,13 +178,20 @@ export default function CommunityTools() {
 
       {filtered.length === 0 ? (
         <div className="card p-6 text-center text-sm text-slate-400">
-          No tools match <span className="font-mono text-neon-cyan">"{query}"</span>.
-          Try a different keyword.
+          {favoritesOnly && !debouncedQuery
+            ? 'No favorites in the community feed yet. Tap the ♡ on any card to save it here.'
+            : <>No tools match <span className="font-mono text-neon-cyan">"{query}"</span>. Try a different keyword.</>}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
+            <ToolCard
+              key={tool.id}
+              tool={tool}
+              isFavorite={isFavorite(tool.id)}
+              onToggleFavorite={toggleFavorite}
+              onCopied={addRecent}
+            />
           ))}
         </div>
       )}

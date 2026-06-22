@@ -20,21 +20,26 @@ export interface Tool {
 
 interface ToolCardProps {
   tool: Tool;
-  /** Show a "Featured" ribbon in the top-right corner. */
+  /** Show a "Featured" chip in the metadata row. */
   featured?: boolean;
   /** Optional tap handler that fires after a successful copy. */
   onCopied?: (tool: Tool) => void;
+  /** Whether this tool is currently favorited by the user. */
+  isFavorite?: boolean;
+  /** Toggle the favorite state. */
+  onToggleFavorite?: (id: string) => void;
 }
 
 /**
  * Reusable ToolCard — renders a mobile-optimized list item with:
  *  - A square icon tile (letter avatar fallback if `icon` is just initials)
- *  - Tool name, author, and category chip
+ *  - Tool name, author, category chip, verified badge, featured chip
+ *  - A star button (top-right) to favorite/unfavorite the tool
  *  - Concise description
  *  - A prominent "Copy Loadstring" button using the modern Clipboard API,
  *    with a visible success state ("Copied!") that auto-reverts after 1.5s.
  */
-export default function ToolCard({ tool, featured, onCopied }: ToolCardProps) {
+export default function ToolCard({ tool, featured, onCopied, isFavorite, onToggleFavorite }: ToolCardProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,10 +78,23 @@ export default function ToolCard({ tool, featured, onCopied }: ToolCardProps) {
 
   return (
     <article className="card relative overflow-hidden p-4 tap-highlight-none">
-      {featured && (
-        <span className="absolute right-3 top-3 chip border-neon-cyan/40 text-neon-cyan">
-          ★ Featured
-        </span>
+      {/* Favorite star — top-right corner */}
+      {onToggleFavorite && (
+        <button
+          type="button"
+          onClick={() => onToggleFavorite(tool.id)}
+          className={`absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-90 ${
+            isFavorite
+              ? 'border-amber-400/50 bg-amber-400/15 text-amber-400 shadow-[0_0_12px_-2px_rgba(251,191,36,0.5)]'
+              : 'border-white/10 bg-white/5 text-slate-500 hover:text-slate-300'
+          }`}
+          aria-label={isFavorite ? `Unfavorite ${tool.name}` : `Favorite ${tool.name}`}
+          aria-pressed={isFavorite}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={isFavorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </button>
       )}
 
       <div className="flex items-start gap-3">
@@ -99,6 +117,11 @@ export default function ToolCard({ tool, featured, onCopied }: ToolCardProps) {
             <span>by {tool.author}</span>
             <span className="text-slate-600">•</span>
             <span className="chip">{tool.category}</span>
+            {featured && (
+              <span className="inline-flex items-center gap-0.5 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-semibold text-neon-cyan">
+                ★ Featured
+              </span>
+            )}
             {tool.verified === true && (
               <span
                 className="inline-flex items-center gap-0.5 rounded-full border border-neon-green/40 bg-neon-green/10 px-2 py-0.5 text-[10px] font-semibold text-neon-green"
