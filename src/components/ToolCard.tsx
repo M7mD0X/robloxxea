@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export interface Tool {
   id: string;
@@ -42,6 +43,13 @@ interface ToolCardProps {
 export default function ToolCard({ tool, featured, onCopied, isFavorite, onToggleFavorite }: ToolCardProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  // Navigate to the tool detail page. Passes the tool via router state so
+  // the detail page doesn't need to refetch.
+  const goToDetail = useCallback(() => {
+    navigate(`/tool/${tool.id}`, { state: { tool } });
+  }, [navigate, tool]);
 
   const handleCopy = useCallback(async () => {
     const text = tool.loadstring;
@@ -97,7 +105,15 @@ export default function ToolCard({ tool, featured, onCopied, isFavorite, onToggl
         </button>
       )}
 
-      <div className="flex items-start gap-3">
+      {/* Clickable header — navigates to tool detail page.
+          The star button is absolutely positioned above this with z-10,
+          so taps on the star don't reach this handler. */}
+      <button
+        type="button"
+        onClick={goToDetail}
+        className="flex w-full items-start gap-3 text-left"
+        aria-label={`View details for ${tool.name}`}
+      >
         {/* Icon tile */}
         <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 font-mono text-sm font-bold"
@@ -143,9 +159,16 @@ export default function ToolCard({ tool, featured, onCopied, isFavorite, onToggl
             )}
           </div>
         </div>
-      </div>
+      </button>
 
-      <p className="mt-3 text-sm leading-relaxed text-slate-300">{tool.description}</p>
+      <button
+        type="button"
+        onClick={goToDetail}
+        className="mt-3 block w-full text-left"
+        aria-label={`View details for ${tool.name}`}
+      >
+        <p className="text-sm leading-relaxed text-slate-300">{tool.description}</p>
+      </button>
 
       {tool.tags && tool.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">

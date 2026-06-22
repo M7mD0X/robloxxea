@@ -8,6 +8,7 @@ import UpdateToast from './components/UpdateToast';
 const MainTools = lazy(() => import('./pages/MainTools'));
 const CommunityTools = lazy(() => import('./pages/CommunityTools'));
 const Docs = lazy(() => import('./pages/Docs'));
+const ToolDetail = lazy(() => import('./pages/ToolDetail'));
 
 function PageFallback() {
   return (
@@ -65,6 +66,7 @@ export default function App() {
             <Route path="/" element={<MainTools />} />
             <Route path="/community" element={<CommunityTools />} />
             <Route path="/docs" element={<Docs />} />
+            <Route path="/tool/:id" element={<ToolDetail />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
