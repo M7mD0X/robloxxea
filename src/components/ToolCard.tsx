@@ -12,6 +12,10 @@ export interface Tool {
   iconColor?: string;
   tags?: string[];
   featured?: boolean;
+  /** True when the loadstring has been HTTP-verified to return real Lua source. */
+  verified?: boolean;
+  /** ISO date of the last verification check. */
+  lastVerified?: string;
 }
 
 interface ToolCardProps {
@@ -95,6 +99,25 @@ export default function ToolCard({ tool, featured, onCopied }: ToolCardProps) {
             <span>by {tool.author}</span>
             <span className="text-slate-600">•</span>
             <span className="chip">{tool.category}</span>
+            {tool.verified === true && (
+              <span
+                className="inline-flex items-center gap-0.5 rounded-full border border-neon-green/40 bg-neon-green/10 px-2 py-0.5 text-[10px] font-semibold text-neon-green"
+                title={`Loadstring verified${tool.lastVerified ? ` on ${tool.lastVerified}` : ''}`}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Verified
+              </span>
+            )}
+            {tool.verified === false && (
+              <span
+                className="inline-flex items-center gap-0.5 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-2 py-0.5 text-[10px] font-semibold text-neon-pink"
+                title="Loadstring has not been verified — test before relying on it."
+              >
+                Unverified
+              </span>
+            )}
           </div>
         </div>
       </div>
