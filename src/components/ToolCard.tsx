@@ -1,0 +1,185 @@
+import { useState, useCallback } from 'react';
+
+export interface Tool {
+  id: string;
+  name: string;
+  author: string;
+  category: string;
+  description: string;
+  loadstring: string;
+  repo?: string;
+  icon?: string;
+  iconColor?: string;
+  tags?: string[];
+  featured?: boolean;
+}
+
+interface ToolCardProps {
+  tool: Tool;
+  /** Show a "Featured" ribbon in the top-right corner. */
+  featured?: boolean;
+  /** Optional tap handler that fires after a successful copy. */
+  onCopied?: (tool: Tool) => void;
+}
+
+/**
+ * Reusable ToolCard — renders a mobile-optimized list item with:
+ *  - A square icon tile (letter avatar fallback if `icon` is just initials)
+ *  - Tool name, author, and category chip
+ *  - Concise description
+ *  - A prominent "Copy Loadstring" button using the modern Clipboard API,
+ *    with a visible success state ("Copied!") that auto-reverts after 1.5s.
+ */
+export default function ToolCard({ tool, featured, onCopied }: ToolCardProps) {
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCopy = useCallback(async () => {
+    const text = tool.loadstring;
+    try {
+      // Modern Web Clipboard API — preferred path
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for non-secure contexts (older mobile browsers)
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        if (!document.execCommand('copy')) {
+          throw new Error('execCommand copy failed');
+        }
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setError(null);
+      onCopied?.(tool);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch (e) {
+      setError('Copy failed — long-press to select manually.');
+      window.setTimeout(() => setError(null), 2500);
+    }
+  }, [tool, onCopied]);
+
+  const tileColor = tool.iconColor ?? '#22d3ee';
+  const initials = (tool.icon ?? tool.name.slice(0, 2)).toUpperCase();
+
+  return (
+    <article className="card relative overflow-hidden p-4 tap-highlight-none">
+      {featured && (
+        <span className="absolute right-3 top-3 chip border-neon-cyan/40 text-neon-cyan">
+          ★ Featured
+        </span>
+      )}
+
+      <div className="flex items-start gap-3">
+        {/* Icon tile */}
+        <div
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 font-mono text-sm font-bold"
+          style={{
+            backgroundColor: `${tileColor}1a`,
+            color: tileColor,
+            boxShadow: `0 0 18px -6px ${tileColor}66`
+          }}
+          aria-hidden
+        >
+          {initials}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-base font-semibold text-slate-50">{tool.name}</h3>
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
+            <span>by {tool.author}</span>
+            <span className="text-slate-600">•</span>
+            <span className="chip">{tool.category}</span>
+          </div>
+        </div>
+      </div>
+
+      <p className="mt-3 text-sm leading-relaxed text-slate-300">{tool.description}</p>
+
+      {tool.tags && tool.tags.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {tool.tags.slice(0, 5).map((t) => (
+            <span key={t} className="chip">
+              #{t}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Loadstring preview */}
+      <pre className="mt-3 overflow-x-auto rounded-lg border border-white/5 bg-void-900/80 p-2.5 font-mono text-[11px] leading-relaxed text-slate-400">
+        <code className="whitespace-pre">{tool.loadstring}</code>
+      </pre>
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleCopy}
+          className={`btn-neon flex-1 ${copied ? 'btn-success' : ''}`}
+          aria-label={`Copy loadstring for ${tool.name}`}
+        >
+          {copied ? (
+            <>
+              <CheckIcon /> Copied!
+            </>
+          ) : (
+            <>
+              <CopyIcon /> Copy Loadstring
+            </>
+          )}
+        </button>
+
+        {tool.repo && (
+          <a
+            href={tool.repo}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-neon-purple px-3"
+            aria-label={`Open ${tool.name} repository`}
+          >
+            <ExternalLinkIcon />
+          </a>
+        )}
+      </div>
+
+      {error && (
+        <p className="mt-2 text-xs text-neon-pink" role="alert">
+          {error}
+        </p>
+      )}
+    </article>
+  );
+}
+
+/* --- Inline SVG icons (no external icon dep required) --- */
+function CopyIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}

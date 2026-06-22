@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    /* iOS safe-area aware padding so the bottom nav never collides with the home indicator */
+    background-color: #0a0a0f;
+    background-image:
+      radial-gradient(1200px 600px at 100% -10%, rgba(168, 85, 247, 0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(34, 211, 238, 0.10), transparent 60%);
+    background-attachment: fixed;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Slim, dark scrollbars to match the hacker aesthetic */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1f1f30;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a2a45;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-white/5 bg-void-700/70 backdrop-blur-sm;
+  }
+
+  .btn-neon {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-xl
+           bg-neon-cyan/10 px-3.5 py-2 text-sm font-semibold text-neon-cyan
+           border border-neon-cyan/30 transition-all
+           active:scale-95 active:bg-neon-cyan/20
+           hover:border-neon-cyan/60 hover:shadow-glow;
+  }
+
+  .btn-neon-purple {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-xl
+           bg-neon-purple/10 px-3.5 py-2 text-sm font-semibold text-neon-purple
+           border border-neon-purple/30 transition-all
+           active:scale-95 active:bg-neon-purple/20
+           hover:border-neon-purple/60 hover:shadow-glow-purple;
+  }
+
+  .btn-success {
+    @apply bg-neon-green/15 text-neon-green border-neon-green/50 shadow-glow;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5
+           px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-white/10 bg-void-800/80 px-4 py-3
+           text-sm text-slate-100 placeholder:text-slate-500
+           focus:border-neon-cyan/60 focus:outline-none focus:ring-2 focus:ring-neon-cyan/20;
+  }
+
+  .prose-docs {
+    @apply text-[15px] leading-relaxed text-slate-300;
+  }
+  .prose-docs h2 {
+    @apply mt-8 mb-3 text-xl font-bold text-slate-50;
+  }
+  .prose-docs h3 {
+    @apply mt-6 mb-2 text-base font-semibold text-neon-cyan;
+  }
+  .prose-docs p {
+    @apply mb-4;
+  }
+  .prose-docs ul {
+    @apply mb-4 ml-4 list-disc space-y-1.5 text-slate-300 marker:text-neon-purple;
+  }
+  .prose-docs code {
+    @apply rounded bg-void-900 px-1.5 py-0.5 font-mono text-[13px] text-neon-cyan;
+  }
+  .prose-docs strong {
+    @apply font-semibold text-slate-100;
+  }
+}
+
+@layer utilities {
+  .safe-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+}

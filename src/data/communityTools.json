@@ -1,0 +1,154 @@
+{
+  "_meta": {
+    "name": "RobloxXea — Community Tools Feed",
+    "version": "1.0.0",
+    "updated": "2026-06-22",
+    "description": "Auto-updating community library. In production this file is hosted at a raw GitHub URL (see CommunityTools.tsx) and re-fetched on every app launch. The shape mirrors mainTools.json so the same ToolCard component renders both feeds."
+  },
+  "tools": [
+    {
+      "id": "comm-aimmy",
+      "name": "Aimmy (Community Fork)",
+      "author": "Babyhamsta",
+      "category": "Aimbot",
+      "description": "A community-maintained AI-assisted aim assist that uses a YOLO model to detect player heads. Configurable FOV, smoothing, and trigger key. Includes a one-click calibration wizard.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/Babyhamsta/Aimmy/main/Aimmy.lua'))()",
+      "repo": "https://github.com/Babyhamsta/Aimmy",
+      "icon": "AM",
+      "iconColor": "#ec4899",
+      "tags": ["aimbot", "ai", "yolo"]
+    },
+    {
+      "id": "comm-ninja",
+      "name": "Ninja Legends Auto-Farm",
+      "author": "RandomScriptsDev",
+      "category": "Auto-Farm",
+      "description": "Fully automatic Ninja Legends farm: sells swords, buys belts, unlocks islands, and rebirths on a schedule. Tunable thresholds via a settings menu.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/RandomScriptsDev/NinjaLegendsFarm/main/source.lua'))()",
+      "repo": "https://github.com/RandomScriptsDev/NinjaLegendsFarm",
+      "icon": "NL",
+      "iconColor": "#22d3ee",
+      "tags": ["autofarm", "ninja", "sell", "rebirth"]
+    },
+    {
+      "id": "comm-pet-sim",
+      "name": "Pet Sim 99 Helper",
+      "author": "PetSimCommunity",
+      "category": "Auto-Farm",
+      "description": "Community helper for Pet Simulator 99. Auto-hatches eggs, auto-sells duplicates, auto-claims gifts, and includes a trade calculator powered by the live community price sheet.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/PetSimCommunity/PS99Helper/main/init.lua'))()",
+      "repo": "https://github.com/PetSimCommunity/PS99Helper",
+      "icon": "PS",
+      "iconColor": "#a855f7",
+      "tags": ["petsim", "autofarm", "eggs", "trade"]
+    },
+    {
+      "id": "comm-blox-fruits",
+      "name": "Blox Fruits Universal",
+      "author": "FruitFarmers",
+      "category": "Auto-Farm",
+      "description": "Universal Blox Fruits automation: auto-farm NPCs, auto-buy fruits, auto-raid, and auto-store fruits. Supports custom farm-zone selection and race-v4 prep.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/FruitFarmers/BloxUniversal/main/main.lua'))()",
+      "repo": "https://github.com/FruitFarmers/BloxUniversal",
+      "icon": "BF",
+      "iconColor": "#4ade80",
+      "tags": ["bloxfruits", "autofarm", "raid"]
+    },
+    {
+      "id": "comm-arsenal",
+      "name": "Arsenal Silent Aim",
+      "author": "silentdev",
+      "category": "Combat",
+      "description": "Silent-aim module tuned for Arsenal. Predicts bullet trajectory, accounts for projectile speed, and supports team-check, wall-check, and FOV sliders.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/silentdev/ArsenalSilent/main/init.lua'))()",
+      "repo": "https://github.com/silentdev/ArsenalSilent",
+      "icon": "AR",
+      "iconColor": "#ec4899",
+      "tags": ["arsenal", "silentaim", "combat", "fps"]
+    },
+    {
+      "id": "comm-mmts",
+      "name": "MM2 Server Hop",
+      "author": "MMCommunity",
+      "category": "Utility",
+      "description": "Murder Mystery 2 utility: server-hops to low-population servers for faster round farming, auto-collects coins, and includes a Sheriff/Murderer notifier.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/MMCommunity/MM2Hopper/main/main.lua'))()",
+      "repo": "https://github.com/MMCommunity/MM2Hopper",
+      "icon": "MM",
+      "iconColor": "#22d3ee",
+      "tags": ["mm2", "serverhop", "utility"]
+    },
+    {
+      "id": "comm-ghub",
+      "name": "Universal Script Hub",
+      "author": "OpenHubDevs",
+      "category": "Script Hub",
+      "description": "An open-source script hub shell with a searchable game database, favorites, and per-game module loading. Designed as a starting template for community contributors to publish their own scripts.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/OpenHubDevs/UniversalHub/main/hub.lua'))()",
+      "repo": "https://github.com/OpenHubDevs/UniversalHub",
+      "icon": "UH",
+      "iconColor": "#a855f7",
+      "tags": ["hub", "universal", "template"]
+    },
+    {
+      "id": "comm-wally-ui",
+      "name": "Wally UI Library",
+      "author": "wallystherblx",
+      "category": "UI Library",
+      "description": "A widely used UI library for building clean tabbed settings menus. Drop-in for any script that needs a draggable, themeable control panel with toggles, sliders, dropdowns, and keybinds.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/wallystherblx/UI-Library/main/Library.lua'))()",
+      "repo": "https://github.com/wallystherblx/UI-Library",
+      "icon": "WU",
+      "iconColor": "#4ade80",
+      "tags": ["ui", "library", "tabs", "widgets"]
+    },
+    {
+      "id": "comm-rayfield",
+      "name": "Rayfield UI",
+      "author": "sirius-softworks",
+      "category": "UI Library",
+      "description": "A modern, animated UI library with a notification system, key-system integration, and Discord webhook support. Popular choice for community scripts that want a polished, modern look out of the box.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/sirius-softworks/Rayfield/main/source.lua'))()",
+      "repo": "https://github.com/sirius-softworks/Rayfield",
+      "icon": "RF",
+      "iconColor": "#22d3ee",
+      "tags": ["ui", "library", "notifications", "modern"]
+    },
+    {
+      "id": "comm-orion",
+      "name": "Orion Library",
+      "author": "JailbreakV",
+      "category": "UI Library",
+      "description": "A minimal, fast UI library inspired by modern desktop apps. Provides tabs, sections, toggles, sliders, color pickers, and a built-in search. Zero external dependencies.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/JailbreakV/Orion/main/Source.lua'))()",
+      "repo": "https://github.com/JailbreakV/Orion",
+      "icon": "OR",
+      "iconColor": "#ec4899",
+      "tags": ["ui", "library", "minimal"]
+    },
+    {
+      "id": "comm-fluent",
+      "name": "Fluent UI",
+      "author": "FluentDevs",
+      "category": "UI Library",
+      "description": "A Windows 11 Fluent-style UI library for Roblox scripts. Includes acrylic blur effects, animated transitions, dialog system, and Themable accent colors. Designed to feel native on Windows 11.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/FluentDevs/Fluent/main/Source.lua'))()",
+      "repo": "https://github.com/FluentDevs/Fluent",
+      "icon": "FL",
+      "iconColor": "#a855f7",
+      "tags": ["ui", "library", "fluent", "windows"]
+    },
+    {
+      "id": "comm-esp-pro",
+      "name": "Universal ESP Pro",
+      "author": "espdev",
+      "category": "ESP / Visuals",
+      "description": "Advanced ESP with cham rendering, distance fade, customizable fonts, and per-team color schemes. Supports players, NPCs, and items. Optimized render loop keeps frame cost low.",
+      "loadstring": "loadstring(game:HttpGet('https://raw.githubusercontent.com/espdev/UniversalESPPro/main/source.lua'))()",
+      "repo": "https://github.com/espdev/UniversalESPPro",
+      "icon": "EP",
+      "iconColor": "#4ade80",
+      "tags": ["esp", "chams", "visuals", "universal"]
+    }
+  ]
+}
