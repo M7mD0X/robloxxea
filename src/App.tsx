@@ -9,6 +9,7 @@ const MainTools = lazy(() => import('./pages/MainTools'));
 const CommunityTools = lazy(() => import('./pages/CommunityTools'));
 const Docs = lazy(() => import('./pages/Docs'));
 const ToolDetail = lazy(() => import('./pages/ToolDetail'));
+const UrlToLoadstring = lazy(() => import('./pages/UrlToLoadstring'));
 
 function PageFallback() {
   return (
@@ -67,6 +68,7 @@ export default function App() {
             <Route path="/community" element={<CommunityTools />} />
             <Route path="/docs" element={<Docs />} />
             <Route path="/tool/:id" element={<ToolDetail />} />
+            <Route path="/convert" element={<UrlToLoadstring />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
