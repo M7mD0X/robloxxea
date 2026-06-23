@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
 interface NavSection {
@@ -92,20 +92,27 @@ export default function Nav({
 }) {
   const location = useLocation();
 
-  // Close drawer on route change (mobile only)
+  // Store onClose in a ref so the route-change effect doesn't re-fire on
+  // every render (which happens when the parent passes an inline arrow
+  // function). This was the bug causing the drawer to immediately close.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // Close drawer on route change (mobile only). Only depends on location —
+  // NOT on onClose, which would trigger on every parent re-render.
   useEffect(() => {
-    onClose();
-  }, [location.pathname, location.search, onClose]);
+    onCloseRef.current();
+  }, [location.pathname, location.search]);
 
   // Close drawer on Escape key
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return (
     <>
@@ -113,7 +120,7 @@ export default function Nav({
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
-          onClick={onClose}
+          onClick={() => onCloseRef.current()}
           aria-hidden
         />
       )}
