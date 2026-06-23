@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import Nav from './components/Nav';
@@ -23,46 +24,46 @@ function PageFallback() {
 }
 
 export default function App() {
+  const [navOpen, setNavOpen] = useState(false);
+
   return (
     <div className="relative min-h-screen w-full">
-      <Nav />
+      <Nav isOpen={navOpen} onClose={() => setNavOpen(false)} />
 
-      {/* Main content — offset for sidebar on desktop (lg:pl-64),
-          bottom padding for mobile bottom nav (pb-28). */}
+      {/* Main content — offset for sidebar on desktop (lg:pl-64) */}
       <div className="flex min-h-screen flex-col lg:pl-64">
-        {/* Mobile-only header (desktop has the sidebar logo) */}
+        {/* Mobile header (with hamburger to open drawer) */}
         <header className="safe-pt sticky top-0 z-30 border-b border-white/5 bg-void-900/80 backdrop-blur-md lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-neon-cyan/40 bg-neon-cyan/10 font-mono text-xs font-bold text-neon-cyan" aria-hidden>
-                RX
-              </span>
-              <div className="leading-none">
-                <h1 className="font-mono text-base font-bold tracking-tight text-slate-50">
-                  Roblox<span className="text-neon-cyan">Xea</span>
-                </h1>
-                <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                  Scripter Toolkit
-                </p>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setNavOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300 transition-colors hover:bg-white/10"
+              aria-label="Open menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
 
             <div className="flex items-center gap-2">
-              <a
-                href="https://github.com/M7mD0X/robloxxea"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="chip border-neon-purple/30 text-neon-purple"
-                aria-label="View source on GitHub"
-              >
-                v1.4.0
-              </a>
-              <InstallButton />
+              <img
+                src={`${import.meta.env.BASE_URL}rx-icon.png`}
+                alt=""
+                className="h-6 w-6 rounded-md"
+              />
+              <h1 className="font-mono text-sm font-bold tracking-tight text-slate-50">
+                Roblox<span className="text-neon-cyan">Xea</span>
+              </h1>
             </div>
+
+            <InstallButton />
           </div>
         </header>
 
-        {/* Desktop-only top bar (install button + GitHub link) */}
+        {/* Desktop top bar (install button + GitHub link) */}
         <div className="hidden items-center justify-end gap-2 px-8 py-3 lg:flex">
           <a
             href="https://github.com/M7mD0X/robloxxea"
@@ -71,13 +72,13 @@ export default function App() {
             className="chip border-neon-purple/30 text-neon-purple"
             aria-label="View source on GitHub"
           >
-            v1.4.0
+            v1.5.0
           </a>
           <InstallButton />
         </div>
 
         {/* Page outlet */}
-        <main className="mx-auto w-full max-w-screen-xl flex-1 px-4 pb-28 pt-4 sm:px-6 lg:px-8 lg:pb-8">
+        <main className="mx-auto w-full max-w-screen-xl flex-1 px-4 pb-8 pt-4 sm:px-6 lg:px-8">
           <Suspense fallback={<PageFallback />}>
             <Routes>
               <Route path="/" element={<Main />} />
@@ -85,7 +86,7 @@ export default function App() {
               <Route path="/apps" element={<AppToolsPage />} />
               <Route path="/docs" element={<Docs />} />
               <Route path="/tool/:id" element={<ToolDetail />} />
-              {/* Legacy redirects — old routes map to new ones */}
+              {/* Legacy redirects */}
               <Route path="/community" element={<Navigate to="/tools?tab=community" replace />} />
               <Route path="/convert" element={<Navigate to="/apps" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
