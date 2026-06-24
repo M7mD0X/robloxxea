@@ -7,13 +7,13 @@ import { fetchAllTools, type Tool } from '../lib/tools';
 type Subtab = 'official' | 'community';
 
 /**
- * ToolsPage — Official + Community tools with a segmented control subtab.
- * Data is fetched from Supabase on mount.
+ * ToolsPage — Official + Community tools. The subtab is controlled by the
+ * sidebar (which sets ?tab=community in the URL). Data is fetched from
+ * Supabase on mount.
  */
 export default function ToolsPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = (searchParams.get('tab') as Subtab) || 'official';
-  const [subtab, setSubtab] = useState<Subtab>(initialTab);
+  const [searchParams] = useSearchParams();
+  const subtab: Subtab = (searchParams.get('tab') as Subtab) || 'official';
 
   const [officialTools, setOfficialTools] = useState<Tool[]>([]);
   const [communityTools, setCommunityTools] = useState<Tool[]>([]);
@@ -37,10 +37,6 @@ export default function ToolsPage() {
     load();
     return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => {
-    setSearchParams(subtab === 'official' ? {} : { tab: subtab }, { replace: true });
-  }, [subtab, setSearchParams]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 200);
@@ -81,16 +77,6 @@ export default function ToolsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Subtab segmented control */}
-      <div className="flex gap-1 rounded-xl border border-white/10 bg-void-800/50 p-1">
-        <SubtabButton active={isOfficial} onClick={() => setSubtab('official')}>
-          Official ({officialTools.length})
-        </SubtabButton>
-        <SubtabButton active={!isOfficial} onClick={() => setSubtab('community')}>
-          Community ({communityTools.length})
-        </SubtabButton>
-      </div>
-
       {/* Hero */}
       <section className={`rounded-2xl border p-4 transition-colors duration-300 ${isOfficial ? 'border-neon-cyan/20 bg-gradient-to-br from-neon-cyan/10 via-void-700/40 to-neon-purple/10' : 'border-neon-purple/20 bg-gradient-to-br from-neon-purple/10 via-void-700/40 to-neon-cyan/10'}`}>
         <h2 className="text-lg font-bold text-slate-50">
@@ -165,23 +151,6 @@ export default function ToolsPage() {
         </div>
       )}
     </div>
-  );
-}
-
-function SubtabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 ${
-        active
-          ? 'bg-neon-cyan/15 text-neon-cyan shadow-glow'
-          : 'text-slate-400 hover:text-slate-200'
-      }`}
-      aria-pressed={active}
-    >
-      {children}
-    </button>
   );
 }
 

@@ -1,10 +1,17 @@
 import { useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+interface NavChild {
+  to: string;
+  label: string;
+  isActive: (pathname: string, search: string) => boolean;
+}
 
 interface NavItem {
   to: string;
   label: string;
   icon: (active: boolean) => JSX.Element;
+  children?: NavChild[];
 }
 
 const ITEMS: NavItem[] = [
@@ -25,7 +32,25 @@ const ITEMS: NavItem[] = [
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
       </svg>
-    )
+    ),
+    children: [
+      {
+        to: '/tools',
+        label: 'Official',
+        isActive: (pathname, search) => {
+          if (pathname !== '/tools') return false;
+          return new URLSearchParams(search).get('tab') !== 'community';
+        },
+      },
+      {
+        to: '/tools?tab=community',
+        label: 'Community',
+        isActive: (pathname, search) => {
+          if (pathname !== '/tools') return false;
+          return new URLSearchParams(search).get('tab') === 'community';
+        },
+      },
+    ]
   },
   {
     to: '/apps',
@@ -35,7 +60,14 @@ const ITEMS: NavItem[] = [
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
       </svg>
-    )
+    ),
+    children: [
+      {
+        to: '/apps',
+        label: 'URL to Loadstring',
+        isActive: (pathname) => pathname === '/apps',
+      },
+    ]
   },
   {
     to: '/docs',
@@ -50,13 +82,26 @@ const ITEMS: NavItem[] = [
 ];
 
 /**
- * Nav — unified sidebar:
+ * Nav — unified sidebar with hierarchical subtabs:
  * - Desktop (lg+): fixed 256px sidebar, always visible
  * - Mobile: off-canvas drawer, opened via hamburger button in header
  *
- * Flat structure — 4 items only, no nested subitems. Tab switching (Official/
- * Community, URL to Loadstring) is handled by segmented controls inside each
- * page, not by sidebar subitems.
+ * Active state is computed manually via useLocation (pathname + search)
+ * so that only ONE item is ever active at a time. NavLink's built-in
+ * isActive doesn't handle search params, which caused the multi-active
+ * bug in the previous version.
+ *
+ * Hierarchy:
+ *   Main
+ *   Tools
+ *     Official       (/tools, default)
+ *     Community      (/tools?tab=community)
+ *   App Tools
+ *     URL to Loadstring  (/apps)
+ *   Docs
+ *
+ * When a child is active, the parent is NOT marked active — only the
+ * specific child gets the cyan highlight + left border.
  */
 export default function Nav({
   isOpen = false,
@@ -66,6 +111,7 @@ export default function Nav({
   onClose?: () => void;
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -82,6 +128,13 @@ export default function Nav({
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen]);
+
+  /** Check if a top-level item (no children) is active. */
+  function isParentActive(item: NavItem): boolean {
+    if (item.children) return false; // parents with children are never "active" themselves
+    if (item.to === '/') return location.pathname === '/';
+    return location.pathname === item.to;
+  }
 
   return (
     <>
@@ -132,33 +185,57 @@ export default function Nav({
             </button>
           </div>
 
-          {/* Nav items — flat, no subitems */}
+          {/* Nav items */}
           <nav className="flex-1 overflow-y-auto p-3">
-            <ul className="space-y-1">
-              {ITEMS.map((item) => (
-                <li key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    end={item.to === '/'}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                        isActive
+            <ul className="space-y-0.5">
+              {ITEMS.map((item) => {
+                const parentActive = isParentActive(item);
+                const hasChildren = !!item.children;
+
+                return (
+                  <li key={item.to}>
+                    {/* Parent item — clickable to navigate to its route */}
+                    <button
+                      type="button"
+                      onClick={() => navigate(item.to)}
+                      className={`flex w-full items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                        parentActive
                           ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
                           : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-200'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <span className={`transition-transform duration-200 ${isActive ? 'scale-110 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]' : ''}`}>
-                          {item.icon(isActive)}
-                        </span>
-                        {item.label}
-                      </>
+                      }`}
+                    >
+                      <span className={`transition-transform duration-200 ${parentActive ? 'scale-110 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]' : ''}`}>
+                        {item.icon(parentActive)}
+                      </span>
+                      {item.label}
+                    </button>
+
+                    {/* Children — indented subitems */}
+                    {hasChildren && (
+                      <ul className="mt-0.5 ml-5 space-y-0.5 border-l border-white/5 pl-3">
+                        {item.children!.map((child) => {
+                          const childActive = child.isActive(location.pathname, location.search);
+                          return (
+                            <li key={child.to}>
+                              <button
+                                type="button"
+                                onClick={() => navigate(child.to)}
+                                className={`flex w-full items-center rounded-md border-l-2 px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                                  childActive
+                                    ? 'border-neon-cyan/60 bg-neon-cyan/5 text-neon-cyan'
+                                    : 'border-transparent text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {child.label}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     )}
-                  </NavLink>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 
