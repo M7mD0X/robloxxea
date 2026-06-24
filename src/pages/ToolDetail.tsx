@@ -1,35 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { type Tool } from '../components/ToolCard';
+import { type Tool, fetchTool } from '../lib/tools';
 import CodeBlock from '../components/CodeBlock';
 import { useToolStorage } from '../hooks/useToolStorage';
-import { detectCompatibility, type CompatibilityBadge } from '../lib/compatibility';
 import { fetchReleases, type GitHubRelease, parseRepoUrl } from '../lib/github';
-import mainToolsData from '../data/mainTools.json';
-import communityToolsData from '../data/communityTools.json';
-
-type MainToolsPayload = { tools: Tool[] };
-type CommunityPayload = { tools: Tool[] };
-
-const MAIN_URL =
-  (import.meta.env.VITE_MAIN_TOOLS_URL as string | undefined) ??
-  'https://raw.githubusercontent.com/M7mD0X/robloxxea-data/main/mainTools.json';
-const COMMUNITY_URL =
-  (import.meta.env.VITE_COMMUNITY_TOOLS_URL as string | undefined) ??
-  'https://raw.githubusercontent.com/M7mD0X/robloxxea-data/main/communityTools.json';
 
 /**
  * ToolDetail — dedicated page for a single tool.
  *
- * Shows the full description, executor-compatibility badges (auto-detected
- * by fetching and scanning the Lua source), the loadstring with a copy
- * button, and the latest 5 GitHub releases as a changelog.
+ * Shows the full description, loadstring with copy button, and the latest
+ * 5 GitHub releases as a changelog (if the tool has a `repo` URL).
  *
  * Navigation:
- * - From a ToolCard click: the tool data is passed via router state, so no
- *   refetch is needed.
- * - From a direct link or page refresh: we fetch both feeds and find the
- *   tool by ID.
+ * - From a ToolCard click: tool data passed via router state (no refetch).
+ * - From a direct link / refresh: fetched from Supabase by ID.
  */
 export default function ToolDetail() {
   const { id } = useParams<{ id: string }>();
@@ -43,11 +27,6 @@ export default function ToolDetail() {
   const [notFound, setNotFound] = useState(false);
 
   const { isFavorite, toggleFavorite, addRecent } = useToolStorage();
-
-  // Compatibility detection state
-  const [badges, setBadges] = useState<CompatibilityBadge[]>([]);
-  const [compatLoading, setCompatLoading] = useState(true);
-  const [compatError, setCompatError] = useState<string | null>(null);
 
   // Releases state
   const [releases, setReleases] = useState<GitHubRelease[]>([]);
@@ -65,67 +44,21 @@ export default function ToolDetail() {
       setLoading(false);
       return;
     }
-
     let cancelled = false;
     async function findTool() {
       setLoading(true);
-      try {
-        // Try fetching both feeds in parallel
-        const [mainRes, communityRes] = await Promise.all([
-          fetch(MAIN_URL, { cache: 'force-cache' }).then((r) => r.json()).catch(() => null),
-          fetch(COMMUNITY_URL, { cache: 'force-cache' }).then((r) => r.json()).catch(() => null),
-        ]);
-
-        if (cancelled) return;
-
-        const mainTools = (mainRes as MainToolsPayload | null)?.tools ??
-          (mainToolsData as MainToolsPayload).tools;
-        const communityTools = (communityRes as CommunityPayload | null)?.tools ??
-          (communityToolsData as CommunityPayload).tools;
-
-        const found = [...mainTools, ...communityTools].find((t) => t.id === id);
-        if (found) {
-          setTool(found);
-        } else {
-          setNotFound(true);
-        }
-      } catch {
-        // Fall back to bundled data
-        const bundled = [
-          ...(mainToolsData as MainToolsPayload).tools,
-          ...(communityToolsData as CommunityPayload).tools,
-        ];
-        const found = bundled.find((t) => t.id === id);
-        if (found) {
-          setTool(found);
-        } else {
-          setNotFound(true);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      const found = await fetchTool(id!);
+      if (cancelled) return;
+      if (found) {
+        setTool(found);
+      } else {
+        setNotFound(true);
       }
+      setLoading(false);
     }
     findTool();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [id, tool]);
-
-  // Detect compatibility once we have the tool
-  useEffect(() => {
-    if (!tool) return;
-    setCompatLoading(true);
-    detectCompatibility(tool)
-      .then((result) => {
-        if (result) {
-          setBadges(result.badges);
-          setCompatError(null);
-        } else {
-          setCompatError('Could not fetch source for analysis (CORS or network error).');
-        }
-      })
-      .finally(() => setCompatLoading(false));
-  }, [tool]);
 
   // Fetch GitHub releases
   useEffect(() => {
@@ -169,7 +102,7 @@ export default function ToolDetail() {
         <div className="card p-8 text-center">
           <p className="text-sm text-slate-400">Tool not found.</p>
           <Link to="/" className="mt-3 inline-block text-sm font-semibold text-neon-cyan">
-            Go to Tools →
+            Go to Main →
           </Link>
         </div>
       </div>
@@ -194,7 +127,7 @@ export default function ToolDetail() {
         Back
       </button>
 
-      {/* Header — large icon + name + meta */}
+      {/* Header */}
       <section className="card p-5">
         <div className="flex items-start gap-4">
           <div
@@ -214,19 +147,6 @@ export default function ToolDetail() {
               <span>by <strong className="text-slate-300">{tool.author}</strong></span>
               <span className="text-slate-600">•</span>
               <span className="chip">{tool.category}</span>
-              {tool.featured && (
-                <span className="inline-flex items-center gap-0.5 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-semibold text-neon-cyan">
-                  ★ Featured
-                </span>
-              )}
-              {tool.verified === true && (
-                <span
-                  className="inline-flex items-center gap-0.5 rounded-full border border-neon-green/40 bg-neon-green/10 px-2 py-0.5 text-[10px] font-semibold text-neon-green"
-                  title={`Verified ${tool.lastVerified ?? ''}`}
-                >
-                  ✓ Verified
-                </span>
-              )}
             </div>
           </div>
 
@@ -261,55 +181,9 @@ export default function ToolDetail() {
         )}
       </section>
 
-      {/* Executor compatibility badges */}
-      <section className="card p-5">
-        <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
-          Compatibility
-        </h2>
-        {compatLoading ? (
-          <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-            <div className="h-3 w-3 animate-spin rounded-full border border-neon-cyan/30 border-t-neon-cyan" />
-            Analyzing source code…
-          </div>
-        ) : compatError ? (
-          <p className="mt-3 text-xs text-slate-500">{compatError}</p>
-        ) : (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {badges.map((badge, i) => (
-              <span
-                key={i}
-                title={badge.detail}
-                className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold ${
-                  badge.variant === 'universal'
-                    ? 'border-neon-green/40 bg-neon-green/10 text-neon-green'
-                    : badge.variant === 'executor'
-                      ? 'border-neon-pink/40 bg-neon-pink/10 text-neon-pink'
-                      : badge.variant === 'info'
-                        ? 'border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan'
-                        : 'border-amber-400/40 bg-amber-400/10 text-amber-400'
-                }`}
-              >
-                {badge.variant === 'universal' && '✓ '}
-                {badge.variant === 'executor' && '⚠ '}
-                {badge.label}
-              </span>
-            ))}
-          </div>
-        )}
-        {parsedRepo && (
-          <p className="mt-2 text-[11px] text-slate-600">
-            Analysis fetches the live source from <code className="font-mono text-slate-500">{parsedRepo.owner}/{parsedRepo.repo}</code> and scans for executor-only APIs.
-          </p>
-        )}
-      </section>
-
       {/* Loadstring */}
       <section className="card p-5">
-        <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <polyline points="16 18 22 12 16 6" />
             <polyline points="8 6 2 12 8 18" />
@@ -366,10 +240,10 @@ export default function ToolDetail() {
         </div>
       </section>
 
-      {/* Changelog — GitHub Releases */}
+      {/* Changelog — GitHub Releases (only if tool has a repo URL) */}
       {tool.repo && (
         <section className="card p-5">
-          <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M3 3v18h18" />
               <path d="M7 12l3-3 3 3 4-4" />
