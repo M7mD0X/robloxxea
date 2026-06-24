@@ -1,24 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
-interface NavSection {
-  type: 'header';
-  label: string;
-}
-
 interface NavItem {
-  type: 'item';
   to: string;
   label: string;
   icon: (active: boolean) => JSX.Element;
-  children?: { to: string; label: string }[];
 }
 
-type NavEntry = NavSection | NavItem;
-
-const ENTRIES: NavEntry[] = [
+const ITEMS: NavItem[] = [
   {
-    type: 'item',
     to: '/',
     label: 'Main',
     icon: (active) => (
@@ -29,21 +19,15 @@ const ENTRIES: NavEntry[] = [
     )
   },
   {
-    type: 'item',
     to: '/tools',
     label: 'Tools',
     icon: (active) => (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.4 : 2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
       </svg>
-    ),
-    children: [
-      { to: '/tools', label: 'Official' },
-      { to: '/tools?tab=community', label: 'Community' },
-    ]
+    )
   },
   {
-    type: 'item',
     to: '/apps',
     label: 'App Tools',
     icon: (active) => (
@@ -51,13 +35,9 @@ const ENTRIES: NavEntry[] = [
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
       </svg>
-    ),
-    children: [
-      { to: '/apps', label: 'URL to Loadstring' },
-    ]
+    )
   },
   {
-    type: 'item',
     to: '/docs',
     label: 'Docs',
     icon: (active) => (
@@ -66,22 +46,17 @@ const ENTRIES: NavEntry[] = [
         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
       </svg>
     )
-  },
+  }
 ];
 
 /**
- * Nav — unified sidebar that works as:
+ * Nav — unified sidebar:
  * - Desktop (lg+): fixed 256px sidebar, always visible
- * - Mobile: off-canvas drawer, opened via hamburger button in the header
+ * - Mobile: off-canvas drawer, opened via hamburger button in header
  *
- * Hierarchical structure (inspired by the reference screenshot):
- * - Parent items with icon + label
- * - Active parent gets colored left border + cyan text
- * - Children (subitems) are indented under the parent, smaller text
- * - Active child gets cyan text + subtle left border
- *
- * The drawer state is controlled by `isOpen` + `onClose` props. On desktop
- * the sidebar is always visible (isOpen is ignored).
+ * Flat structure — 4 items only, no nested subitems. Tab switching (Official/
+ * Community, URL to Loadstring) is handled by segmented controls inside each
+ * page, not by sidebar subitems.
  */
 export default function Nav({
   isOpen = false,
@@ -92,19 +67,13 @@ export default function Nav({
 }) {
   const location = useLocation();
 
-  // Store onClose in a ref so the route-change effect doesn't re-fire on
-  // every render (which happens when the parent passes an inline arrow
-  // function). This was the bug causing the drawer to immediately close.
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
-  // Close drawer on route change (mobile only). Only depends on location —
-  // NOT on onClose, which would trigger on every parent re-render.
   useEffect(() => {
     onCloseRef.current();
   }, [location.pathname, location.search]);
 
-  // Close drawer on Escape key
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -116,7 +85,7 @@ export default function Nav({
 
   return (
     <>
-      {/* Mobile backdrop — click to close */}
+      {/* Mobile backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
@@ -125,26 +94,20 @@ export default function Nav({
         />
       )}
 
-      {/* Sidebar — fixed on desktop, drawer on mobile */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-white/10 bg-void-900/95 backdrop-blur-md safe-pt transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-white/10 bg-void-900/95 backdrop-blur-md safe-pt transition-transform duration-300 ease-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-label="Primary navigation"
       >
         <div className="flex h-full flex-col">
-          {/* Logo header with RX icon */}
+          {/* Logo header */}
           <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
             <div className="flex items-center gap-2.5">
-              {/* RX two-tone icon */}
               <img
                 src={`${import.meta.env.BASE_URL}rx-icon.png`}
                 alt=""
                 className="h-8 w-8 rounded-lg"
-                onError={(e) => {
-                  // Fallback to inline SVG if image fails
-                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                }}
               />
               <div className="leading-none">
                 <h1 className="font-mono text-base font-bold tracking-tight text-slate-50">
@@ -156,7 +119,6 @@ export default function Nav({
               </div>
             </div>
 
-            {/* Close button (mobile only) */}
             <button
               type="button"
               onClick={onClose}
@@ -170,75 +132,37 @@ export default function Nav({
             </button>
           </div>
 
-          {/* Nav items — hierarchical */}
+          {/* Nav items — flat, no subitems */}
           <nav className="flex-1 overflow-y-auto p-3">
-            <ul className="space-y-0.5">
-              {ENTRIES.map((entry, i) => {
-                if (entry.type === 'header') {
-                  return (
-                    <li key={`header-${i}`} className="px-3 pt-4 pb-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-600">
-                        {entry.label}
-                      </p>
-                    </li>
-                  );
-                }
-
-                const item = entry;
-                const hasChildren = item.children && item.children.length > 0;
-
-                return (
-                  <li key={item.to}>
-                    <NavLink
-                      to={item.to}
-                      end={item.to === '/'}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-all ${
-                          isActive
-                            ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
-                            : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-200'
-                        }`
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <span className={isActive ? 'drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]' : ''}>
-                            {item.icon(isActive)}
-                          </span>
-                          {item.label}
-                        </>
-                      )}
-                    </NavLink>
-
-                    {/* Children — indented subitems */}
-                    {hasChildren && (
-                      <ul className="mt-0.5 ml-5 space-y-0.5 border-l border-white/5 pl-3">
-                        {item.children!.map((child) => (
-                          <li key={child.to}>
-                            <NavLink
-                              to={child.to}
-                              end={child.to === item.to}
-                              className={({ isActive }) =>
-                                `flex items-center rounded-md border-l-2 px-3 py-1.5 text-xs font-medium transition-all ${
-                                  isActive
-                                    ? 'border-neon-cyan/60 bg-neon-cyan/5 text-neon-cyan'
-                                    : 'border-transparent text-slate-500 hover:text-slate-300'
-                                }`
-                              }
-                            >
-                              {child.label}
-                            </NavLink>
-                          </li>
-                        ))}
-                      </ul>
+            <ul className="space-y-1">
+              {ITEMS.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    end={item.to === '/'}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
+                          : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span className={`transition-transform duration-200 ${isActive ? 'scale-110 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]' : ''}`}>
+                          {item.icon(isActive)}
+                        </span>
+                        {item.label}
+                      </>
                     )}
-                  </li>
-                );
-              })}
+                  </NavLink>
+                </li>
+              ))}
             </ul>
           </nav>
 
-          {/* Footer — GitHub + version */}
+          {/* Footer */}
           <div className="border-t border-white/5 p-3">
             <a
               href="https://github.com/M7mD0X/robloxxea"

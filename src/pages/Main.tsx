@@ -52,7 +52,7 @@ export default function Main() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl border border-neon-cyan/20 bg-gradient-to-br from-neon-cyan/10 via-void-700/40 to-neon-purple/10 p-6">
         <h1 className="font-mono text-2xl font-bold tracking-tight text-slate-50">
@@ -65,9 +65,9 @@ export default function Main() {
 
       {/* Stats grid */}
       <section className="grid grid-cols-3 gap-3">
-        <StatCard label="Total" value={stats.total} color="#22d3ee" />
-        <StatCard label="Official" value={stats.official} color="#a855f7" />
-        <StatCard label="Community" value={stats.community} color="#ec4899" />
+        <StatCard label="Total" value={stats.total} color="#22d3ee" delay={0} />
+        <StatCard label="Official" value={stats.official} color="#a855f7" delay={50} />
+        <StatCard label="Community" value={stats.community} color="#ec4899" delay={100} />
       </section>
 
       {/* Quick access cards */}
@@ -112,9 +112,12 @@ export default function Main() {
   );
 }
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+function StatCard({ label, value, color, delay = 0 }: { label: string; value: number; color: string; delay?: number }) {
   return (
-    <div className="card p-3 text-center">
+    <div
+      className="card p-3 text-center animate-fade-in-up"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: 'backwards' }}
+    >
       <p className="font-mono text-2xl font-bold" style={{ color }}>{value}</p>
       <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-slate-500">{label}</p>
     </div>
@@ -134,9 +137,9 @@ function QuickAccessCard({
   };
 
   const content = (
-    <div className="card flex items-center gap-3 p-4 transition-colors hover:border-white/20">
+    <div className="card flex items-center gap-3 p-4 transition-all duration-200 hover:border-white/20 hover:scale-[1.02] active:scale-[0.99]">
       <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-transform duration-200 group-hover:scale-110"
         style={{ backgroundColor: `${color}1a`, color, borderColor: `${color}40` }}
         aria-hidden
       >
@@ -152,7 +155,7 @@ function QuickAccessCard({
   );
 
   if (external) {
-    return <a href={to} target="_blank" rel="noopener noreferrer">{content}</a>;
+    return <a href={to} target="_blank" rel="noopener noreferrer" className="group block">{content}</a>;
   }
-  return <Link to={to}>{content}</Link>;
+  return <Link to={to} className="group block">{content}</Link>;
 }

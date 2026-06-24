@@ -18,7 +18,6 @@ export default function ToolsPage() {
   const [officialTools, setOfficialTools] = useState<Tool[]>([]);
   const [communityTools, setCommunityTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -29,14 +28,10 @@ export default function ToolsPage() {
     let cancelled = false;
     async function load() {
       setLoading(true);
-      setError(null);
       const { official, community } = await fetchAllTools();
       if (cancelled) return;
       setOfficialTools(official);
       setCommunityTools(community);
-      if (official.length === 0 && community.length === 0) {
-        setError('No tools found. Add tools via the Supabase dashboard.');
-      }
       setLoading(false);
     }
     load();
@@ -97,7 +92,7 @@ export default function ToolsPage() {
       </div>
 
       {/* Hero */}
-      <section className={`rounded-2xl border p-4 ${isOfficial ? 'border-neon-cyan/20 bg-gradient-to-br from-neon-cyan/10 via-void-700/40 to-neon-purple/10' : 'border-neon-purple/20 bg-gradient-to-br from-neon-purple/10 via-void-700/40 to-neon-cyan/10'}`}>
+      <section className={`rounded-2xl border p-4 transition-colors duration-300 ${isOfficial ? 'border-neon-cyan/20 bg-gradient-to-br from-neon-cyan/10 via-void-700/40 to-neon-purple/10' : 'border-neon-purple/20 bg-gradient-to-br from-neon-purple/10 via-void-700/40 to-neon-cyan/10'}`}>
         <h2 className="text-lg font-bold text-slate-50">
           {isOfficial ? 'Official Tools' : 'Community Library'}
         </h2>
@@ -135,31 +130,37 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      {error && (
-        <div className="rounded-xl border border-neon-pink/30 bg-neon-pink/10 p-3 text-xs text-neon-pink">
-          {error}
-        </div>
-      )}
-
-      {/* Tools grid */}
+      {/* Tools grid / empty state */}
       {visibleTools.length === 0 ? (
-        <div className="card p-6 text-center text-sm text-slate-400">
-          {filter === 'favorites'
-            ? 'No favorites yet. Tap the ♡ on any tool card to save it here.'
-            : debouncedQuery
-              ? <>No tools match <span className="font-mono text-neon-cyan">"{query}"</span>. Try a different keyword.</>
-              : 'No tools yet. Add some via the Supabase dashboard.'}
+        <div className="card flex flex-col items-center p-10 text-center">
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-600">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            </svg>
+          </div>
+          {filter === 'favorites' ? (
+            <p className="text-sm text-slate-400">No favorites yet.<br/>Tap the ♡ on any tool card to save it here.</p>
+          ) : debouncedQuery ? (
+            <p className="text-sm text-slate-400">No tools match <span className="font-mono text-neon-cyan">"{query}"</span>.<br/>Try a different keyword.</p>
+          ) : (
+            <p className="text-sm text-slate-400">No tools yet.</p>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleTools.map((tool) => (
-            <ToolCard
+          {visibleTools.map((tool, i) => (
+            <div
               key={tool.id}
-              tool={tool}
-              isFavorite={isFavorite(tool.id)}
-              onToggleFavorite={toggleFavorite}
-              onCopied={addRecent}
-            />
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${Math.min(i * 50, 400)}ms`, animationFillMode: 'backwards' }}
+            >
+              <ToolCard
+                tool={tool}
+                isFavorite={isFavorite(tool.id)}
+                onToggleFavorite={toggleFavorite}
+                onCopied={addRecent}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -172,7 +173,7 @@ function SubtabButton({ active, onClick, children }: { active: boolean; onClick:
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
+      className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 ${
         active
           ? 'bg-neon-cyan/15 text-neon-cyan shadow-glow'
           : 'text-slate-400 hover:text-slate-200'
@@ -190,12 +191,12 @@ function FilterChip({ active, onClick, disabled, children }: { active: boolean; 
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${
         disabled
           ? 'cursor-not-allowed border-white/5 bg-white/5 text-slate-600 opacity-50'
           : active
             ? 'border-neon-cyan/60 bg-neon-cyan/15 text-neon-cyan'
-            : 'border-white/10 bg-white/5 text-slate-400 hover:text-slate-200'
+            : 'border-white/10 bg-white/5 text-slate-400 hover:text-slate-200 hover:border-white/20'
       }`}
     >
       {children}
