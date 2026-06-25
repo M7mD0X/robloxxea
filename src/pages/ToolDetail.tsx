@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { type Tool, fetchTool } from '../lib/tools';
 import CodeBlock from '../components/CodeBlock';
+import ShareButton from '../components/ShareButton';
 import { useToolStorage } from '../hooks/useToolStorage';
 import { fetchReleases, type GitHubRelease, parseRepoUrl } from '../lib/github';
 
@@ -32,6 +33,7 @@ export default function ToolDetail() {
   const [releases, setReleases] = useState<GitHubRelease[]>([]);
   const [releasesLoading, setReleasesLoading] = useState(true);
   const [releasesError, setReleasesError] = useState<string | null>(null);
+  const [changelogOpen, setChangelogOpen] = useState(true);
 
   // Find the tool if we don't have it from router state
   useEffect(() => {
@@ -237,79 +239,97 @@ export default function ToolDetail() {
               Repo
             </a>
           )}
+          <ShareButton tool={tool} variant="compact" />
         </div>
       </section>
 
-      {/* Changelog — GitHub Releases (only if tool has a repo URL) */}
+      {/* Changelog — GitHub Releases (collapsible, only if tool has a repo URL) */}
       {tool.repo && (
         <section className="card p-5">
-          <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <button
+            type="button"
+            onClick={() => setChangelogOpen((v) => !v)}
+            className="flex w-full items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400 transition-colors hover:text-slate-200"
+            aria-expanded={changelogOpen}
+            aria-controls="changelog-body"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M3 3v18h18" />
               <path d="M7 12l3-3 3 3 4-4" />
             </svg>
             Changelog
+            <svg
+              className={`ml-1 transition-transform duration-200 ${changelogOpen ? 'rotate-90' : ''}`}
+              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
             {parsedRepo && (
               <a
                 href={`${tool.repo}/releases`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ml-auto text-[10px] font-medium normal-case tracking-normal text-slate-500 hover:text-neon-cyan"
+                onClick={(e) => e.stopPropagation()}
               >
                 View all on GitHub →
               </a>
             )}
-          </h2>
+          </button>
 
-          {releasesLoading ? (
-            <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-              <div className="h-3 w-3 animate-spin rounded-full border border-neon-cyan/30 border-t-neon-cyan" />
-              Fetching releases…
+          {changelogOpen && (
+            <div id="changelog-body" className="mt-3">
+              {releasesLoading ? (
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <div className="h-3 w-3 animate-spin rounded-full border border-neon-cyan/30 border-t-neon-cyan" />
+                  Fetching releases…
+                </div>
+              ) : releasesError ? (
+                <p className="text-xs text-slate-500">{releasesError}</p>
+              ) : releases.length === 0 ? (
+                <p className="text-xs text-slate-500">No releases published.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {releases.map((release) => (
+                    <li key={release.id} className="rounded-xl border border-white/5 bg-void-800/50 p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-semibold text-neon-cyan">
+                          {release.tag_name}
+                        </span>
+                        {release.prerelease && (
+                          <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-400">
+                            Pre
+                          </span>
+                        )}
+                        <span className="ml-auto text-[10px] text-slate-500">
+                          {new Date(release.published_at).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      {release.name && release.name !== release.tag_name && (
+                        <p className="mt-1 text-sm font-medium text-slate-200">{release.name}</p>
+                      )}
+                      {release.body && (
+                        <p className="mt-1.5 line-clamp-4 text-xs leading-relaxed text-slate-400 whitespace-pre-wrap">
+                          {release.body}
+                        </p>
+                      )}
+                      <a
+                        href={release.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-block text-[10px] font-medium text-slate-500 hover:text-neon-cyan"
+                      >
+                        View release →
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-          ) : releasesError ? (
-            <p className="mt-3 text-xs text-slate-500">{releasesError}</p>
-          ) : releases.length === 0 ? (
-            <p className="mt-3 text-xs text-slate-500">No releases published.</p>
-          ) : (
-            <ul className="mt-3 space-y-3">
-              {releases.map((release) => (
-                <li key={release.id} className="rounded-xl border border-white/5 bg-void-800/50 p-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-semibold text-neon-cyan">
-                      {release.tag_name}
-                    </span>
-                    {release.prerelease && (
-                      <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-400">
-                        Pre
-                      </span>
-                    )}
-                    <span className="ml-auto text-[10px] text-slate-500">
-                      {new Date(release.published_at).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                  {release.name && release.name !== release.tag_name && (
-                    <p className="mt-1 text-sm font-medium text-slate-200">{release.name}</p>
-                  )}
-                  {release.body && (
-                    <p className="mt-1.5 line-clamp-4 text-xs leading-relaxed text-slate-400 whitespace-pre-wrap">
-                      {release.body}
-                    </p>
-                  )}
-                  <a
-                    href={release.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-block text-[10px] font-medium text-slate-500 hover:text-neon-cyan"
-                  >
-                    View release →
-                  </a>
-                </li>
-              ))}
-            </ul>
           )}
         </section>
       )}

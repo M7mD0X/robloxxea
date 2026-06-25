@@ -1,28 +1,28 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import ToolCard from '../components/ToolCard';
-import RecentCopiedStrip from '../components/RecentCopiedStrip';
-import { useToolStorage } from '../hooks/useToolStorage';
-import { fetchAllTools, type Tool } from '../lib/tools';
+import { fetchAllTools, fetchRecentTools, type Tool } from '../lib/tools';
 
 /**
- * Main — home/overview page. Shows app stats, quick-access cards to each
- * section, recently-copied strip, and a preview of recent tools.
+ * Main — home/overview page. Shows app stats, recently added banner,
+ * quick-access cards, recently copied strip, and recent tools preview.
  */
 export default function Main() {
   const [officialTools, setOfficialTools] = useState<Tool[]>([]);
   const [communityTools, setCommunityTools] = useState<Tool[]>([]);
+  const [recentTools, setRecentTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const { isFavorite, toggleFavorite, addRecent } = useToolStorage();
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const { official, community } = await fetchAllTools();
+      const [all, recent] = await Promise.all([
+        fetchAllTools(),
+        fetchRecentTools(5),
+      ]);
       if (cancelled) return;
-      setOfficialTools(official);
-      setCommunityTools(community);
+      setOfficialTools(all.official);
+      setCommunityTools(all.community);
+      setRecentTools(recent);
       setLoading(false);
     }
     load();
@@ -34,11 +34,6 @@ export default function Main() {
     official: officialTools.length,
     community: communityTools.length,
   }), [officialTools, communityTools]);
-
-  const recentTools = useMemo(
-    () => [...officialTools, ...communityTools].slice(0, 3),
-    [officialTools, communityTools]
-  );
 
   if (loading) {
     return (
@@ -70,6 +65,65 @@ export default function Main() {
         <StatCard label="Community" value={stats.community} color="#ec4899" delay={100} />
       </section>
 
+      {/* Recently Added banner — horizontal scroll of 4-5 tools */}
+      {recentTools.length > 0 && (
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12 2v6m0 0l3-3m-3 3L9 5" />
+                <path d="M5 12h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z" />
+              </svg>
+              Recently Added
+            </h2>
+            <Link to="/tools" className="text-[10px] font-medium uppercase tracking-wider text-slate-500 transition-colors hover:text-neon-cyan">
+              See all →
+            </Link>
+          </div>
+          <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
+            {recentTools.map((tool) => {
+              const tileColor = tool.iconColor ?? '#22d3ee';
+              const initials = (tool.icon ?? tool.name.slice(0, 2)).toUpperCase();
+              return (
+                <Link
+                  key={tool.id}
+                  to={`/tool/${tool.id}`}
+                  state={{ tool }}
+                  className="group flex w-44 shrink-0 flex-col rounded-2xl border border-white/5 bg-void-700/70 p-3 backdrop-blur-sm transition-all duration-200 hover:border-white/15 hover:scale-[1.02] active:scale-[0.99]"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 font-mono text-xs font-bold"
+                      style={{
+                        backgroundColor: `${tileColor}1a`,
+                        color: tileColor,
+                        boxShadow: `0 0 16px -6px ${tileColor}66`,
+                      }}
+                      aria-hidden
+                    >
+                      {initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-slate-50">{tool.name}</p>
+                      <p className="truncate text-[10px] text-slate-500">by {tool.author}</p>
+                    </div>
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-400">{tool.description}</p>
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span className="chip">{tool.category}</span>
+                    {tool.feed === 'official' ? (
+                      <span className="chip border-neon-purple/30 text-neon-purple">Official</span>
+                    ) : (
+                      <span className="chip border-neon-pink/30 text-neon-pink">Community</span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Quick access cards */}
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <QuickAccessCard to="/tools" title="Tools" desc="Browse official + community tools" icon="wrench" color="#22d3ee" />
@@ -78,35 +132,16 @@ export default function Main() {
         <QuickAccessCard to="https://github.com/M7mD0X/robloxxea" title="GitHub" desc="View source code" icon="github" color="#ec4899" external />
       </section>
 
-      <RecentCopiedStrip />
-
-      {/* Recent tools preview */}
-      {recentTools.length > 0 && (
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              Recent Tools
-            </h2>
-            <Link to="/tools" className="text-[10px] font-medium uppercase tracking-wider text-slate-500 hover:text-neon-cyan">
-              View all →
-            </Link>
+      {/* Empty state when no tools exist yet */}
+      {stats.total === 0 && (
+        <div className="card flex flex-col items-center p-10 text-center">
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-600">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            </svg>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {recentTools.map((tool) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                isFavorite={isFavorite(tool.id)}
-                onToggleFavorite={toggleFavorite}
-                onCopied={addRecent}
-              />
-            ))}
-          </div>
-        </section>
+          <p className="text-sm text-slate-400">No tools yet.</p>
+        </div>
       )}
     </div>
   );
@@ -137,7 +172,7 @@ function QuickAccessCard({
   };
 
   const content = (
-    <div className="card flex items-center gap-3 p-4 transition-all duration-200 hover:border-white/20 hover:scale-[1.02] active:scale-[0.99]">
+    <div className="card flex items-center gap-3 p-4 transition-all duration-200 hover:border-white/20 hover:scale-[1.02] active:scale-[0.99] group">
       <div
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-transform duration-200 group-hover:scale-110"
         style={{ backgroundColor: `${color}1a`, color, borderColor: `${color}40` }}

@@ -11,13 +11,27 @@
 
   body {
     /* iOS safe-area aware padding so the bottom nav never collides with the home indicator */
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Dark theme (default) */
+  html.dark body {
     background-color: #0a0a0f;
     background-image:
       radial-gradient(1200px 600px at 100% -10%, rgba(168, 85, 247, 0.10), transparent 60%),
       radial-gradient(900px 500px at -10% 110%, rgba(34, 211, 238, 0.10), transparent 60%);
     background-attachment: fixed;
-    -webkit-tap-highlight-color: transparent;
-    text-rendering: optimizeLegibility;
+  }
+
+  /* Light theme */
+  html.light body {
+    background-color: #f5f5f8;
+    background-image:
+      radial-gradient(1200px 600px at 100% -10%, rgba(168, 85, 247, 0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(34, 211, 238, 0.08), transparent 60%);
+    background-attachment: fixed;
+    color: #1a1a2e;
   }
 
   /* Slim, dark scrollbars to match the hacker aesthetic */
@@ -97,6 +111,40 @@
   }
   .prose-docs strong {
     @apply font-semibold text-slate-100;
+  }
+
+  /* --- Light theme overrides --- */
+  /* Applied when <html> has class="light". Overrides the dark-mode component
+     colors so the same .card / .btn-neon / .input classes work in both themes. */
+  html.light .card {
+    @apply border-black/5 bg-white/80;
+  }
+  html.light .card:hover {
+    @apply border-black/10;
+  }
+
+  html.light .chip {
+    @apply border-black/10 bg-black/5 text-slate-600;
+  }
+
+  html.light .input {
+    @apply border-black/10 bg-white text-slate-800 placeholder:text-slate-400;
+  }
+
+  html.light .prose-docs {
+    @apply text-slate-700;
+  }
+  html.light .prose-docs h2 {
+    @apply text-slate-900;
+  }
+  html.light .prose-docs ul {
+    @apply text-slate-700;
+  }
+  html.light .prose-docs code {
+    @apply bg-slate-100 text-cyan-700;
+  }
+  html.light .prose-docs strong {
+    @apply text-slate-900;
   }
 }
 
