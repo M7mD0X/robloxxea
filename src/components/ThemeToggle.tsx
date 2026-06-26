@@ -1,9 +1,5 @@
 import { useTheme } from '../hooks/useTheme';
 
-/**
- * ThemeToggle — small button for the sidebar footer. Toggles between dark
- * and light themes. Persists the choice to localStorage via ThemeProvider.
- */
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';

@@ -11,6 +11,7 @@ const ToolsPage = lazy(() => import('./pages/ToolsPage'));
 const AppToolsPage = lazy(() => import('./pages/AppToolsPage'));
 const Docs = lazy(() => import('./pages/Docs'));
 const ToolDetail = lazy(() => import('./pages/ToolDetail'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 function PageFallback() {
   return (
@@ -86,6 +87,7 @@ export default function App() {
               <Route path="/apps" element={<AppToolsPage />} />
               <Route path="/docs" element={<Docs />} />
               <Route path="/tool/:id" element={<ToolDetail />} />
+              <Route path="/admin" element={<AdminPage />} />
               {/* Legacy redirects */}
               <Route path="/community" element={<Navigate to="/tools?tab=community" replace />} />
               <Route path="/convert" element={<Navigate to="/apps" replace />} />

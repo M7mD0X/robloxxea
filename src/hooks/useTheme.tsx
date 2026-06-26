@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (typeof window === 'undefined') return 'dark';
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-      return stored ?? 'dark'; // Default to dark
+      return stored ?? 'dark';
     } catch {
       return 'dark';
     }
