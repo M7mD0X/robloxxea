@@ -43,6 +43,7 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }: Auth
       setEmail('');
       setPassword('');
       setDisplayName('');
+      setLoading(false);  // Reset loading when modal opens (in case it was stuck)
     }
   }, [open, initialMode]);
 
@@ -96,7 +97,14 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }: Auth
     try {
       if (provider === 'github') await signInWithGitHub();
       else await signInWithGoogle();
-      // OAuth redirects away — no need to close the modal, the page will reload
+      // OAuth redirects the browser away. If the redirect succeeds, the page
+      // unloads and the code below never runs. But if it fails (provider not
+      // enabled, network error, user presses Back), we need to reset loading
+      // so the user isn't stuck on "Please wait…" forever.
+      //
+      // Give the redirect 5 seconds to start, then reset. If the page is
+      // still here after 5s, something went wrong.
+      setTimeout(() => setLoading(false), 5000);
     } catch (err) {
       setError(err instanceof Error ? err.message : `${provider} login failed`);
       setLoading(false);
